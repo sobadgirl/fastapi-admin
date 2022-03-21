@@ -139,7 +139,7 @@ class Enum(Select):
     async def get_options(self):
         options = [(v.name, v.value) for v in self.enum]
         if self.context.get("null"):
-            options = [("", "")] + options
+            options = [("--------", "")] + options
         return options
 
 
@@ -158,7 +158,7 @@ class ForeignKey(Select):
             for x in ret
         ]
         if self.context.get("null"):
-            options = [("", "")] + options
+            options = [("--------", "")] + options
         return options
 
     async def get_models(self):
@@ -186,7 +186,7 @@ class DistinctColumn(Select):
             for x in ret
         ]
         if self.context.get("null"):
-            options = [("", "")] + options
+            options = [("--------", "")] + options
         return options
 
     async def get_values(self):
@@ -201,7 +201,7 @@ class Boolean(Select):
             ("FALSE", "false"),
         ]
         if self.context.get("null"):
-            options.insert(0, ("", ""))
+            options.insert(0, ("--------", ""))
 
         return options
 

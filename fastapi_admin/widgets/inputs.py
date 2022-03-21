@@ -105,7 +105,7 @@ class ForeignKey(Select):
         ret = await self.get_queryset()
         options = [(str(x), x.pk) for x in ret]
         if self.context.get("null"):
-            options = [("", "")] + options
+            options = [("--------", "")] + options
         return options
 
     async def get_queryset(self):
@@ -162,7 +162,7 @@ class Enum(Select):
     async def get_options(self):
         options = [(v.name, v.value) for v in self.enum]
         if self.context.get("null"):
-            options = [("", "")] + options
+            options = [("--------", "")] + options
         return options
 
 
