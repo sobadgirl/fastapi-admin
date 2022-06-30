@@ -70,7 +70,8 @@ class Action(BaseModel):
     @validator("ajax")
     def ajax_validate(cls, v: bool, values: dict, **kwargs):
         if not v and values["method"] != Method.GET:
-            raise ValueError("ajax is False only available when method is Method.GET")
+            raise ValueError(
+                "ajax is False only available when method is Method.GET")
 
 
 class ToolbarAction(Action):
@@ -111,7 +112,8 @@ class Model(Resource):
             Action(
                 label=_("update"), icon="ti ti-edit", name="update", method=Method.GET, ajax=False
             ),
-            Action(label=_("delete"), icon="ti ti-trash", name="delete", method=Method.DELETE),
+            Action(label=_("delete"), icon="ti ti-trash",
+                   name="delete", method=Method.DELETE),
         ]
 
     async def get_bulk_actions(self, request: Request) -> List[Action]:
@@ -135,13 +137,15 @@ class Model(Resource):
             if isinstance(input_, inputs.File):
                 cls.enctype = "multipart/form-data"
             if (
-                isinstance(input_, inputs.ForeignKey)
+                (isinstance(input_, inputs.ForeignKey) or issubclass(
+                    input_.__class__, inputs.ForeignKey))
                 and (obj is not None)
                 and name in obj._meta.fk_fields
             ):
                 await obj.fetch_related(name)
-                # Value must be the string representation of the fk obj 
-                value = str(getattr(obj, name, None))
+                # Value must be the string representation of the fk value
+                fk_obj = getattr(obj, name, None)
+                value = fk_obj and fk_obj.pk
                 ret.append(await input_.render(request, value))
                 continue
             ret.append(await input_.render(request, getattr(obj, name, None)))
@@ -219,7 +223,8 @@ class Model(Resource):
         fields_map = cls.model._meta.fields_map
         field = fields_map.get(field_name)
         if not field:
-            raise NoSuchFieldFound(f"Can't found field '{field_name}' in model {cls.model}")
+            raise NoSuchFieldFound(
+                f"Can't found field '{field_name}' in model {cls.model}")
         label = field_name
         null = field.null
         placeholder = field.description or ""
@@ -229,7 +234,8 @@ class Model(Resource):
         if field.pk or field.generated:
             display, input_ = displays.Display(), inputs.DisplayOnly()
         elif isinstance(field, BooleanField):
-            display, input_ = displays.Boolean(), inputs.Switch(null=null, default=field.default)
+            display, input_ = displays.Boolean(), inputs.Switch(
+                null=null, default=field.default)
         elif isinstance(field, DatetimeField):
             if field.auto_now or field.auto_now_add:
                 input_ = inputs.DisplayOnly()
@@ -237,7 +243,8 @@ class Model(Resource):
                 input_ = inputs.DateTime(null=null, default=field.default)
             display, input_ = displays.DatetimeDisplay(), input_
         elif isinstance(field, DateField):
-            display, input_ = displays.DateDisplay(), inputs.Date(null=null, default=field.default)
+            display, input_ = displays.DateDisplay(), inputs.Date(
+                null=null, default=field.default)
         elif isinstance(field, IntEnumFieldInstance):
             display, input_ = displays.Display(), inputs.Enum(
                 field.enum_type, null=null, default=field.default
@@ -280,7 +287,8 @@ class Model(Resource):
                 if field.name == pk_column:
                     continue
                 if (is_display and isinstance(field.display, displays.InputOnly)) or (
-                    not is_display and isinstance(field.input, inputs.DisplayOnly)
+                    not is_display and isinstance(
+                        field.input, inputs.DisplayOnly)
                 ):
                     continue
             if (
@@ -315,6 +323,7 @@ class Model(Resource):
             if field in cls.model._meta.fk_fields:
                 ret.append(field)
         return ret
+
 
 class Dropdown(Resource):
     resources: List[Type[Resource]]
